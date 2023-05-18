@@ -1,8 +1,8 @@
 import re
 import os
 from collections import Counter
-from unidecode import unidecode
 from docx import Document
+from utils import sanitize_name
 
 class Result:
     def __init__(self, fields):
@@ -44,12 +44,7 @@ _FIELDS_PLACEHOLDERS = {
 }
 _PLACEHOLDER_REGEX = re.compile('|'.join(_FIELDS_PLACEHOLDERS.values()))
 
-def _sanitize_name(name):
-    s = name.lower()
-    s = re.sub(r"[\s_\-]+", "-", s)
-    return unidecode(s)
-
-def fill_document(fields):
+def fill_document(fields, parent_folder='generated'):
     result = Result(fields)
 
     template_fname = os.path.join('templates', f'{fields["template"]}.docx')
@@ -76,7 +71,7 @@ def fill_document(fields):
 
             r.text = replaced
 
-    out_fname = os.path.join('generated', f'{_sanitize_name(fields["name"])}.docx')
+    out_fname = os.path.join(parent_folder, f'{sanitize_name(fields["name"])}.docx')
     os.makedirs(os.path.dirname(out_fname), exist_ok=True)
     doc.save(out_fname)
 
