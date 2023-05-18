@@ -19,11 +19,16 @@ def _rename_col(col):
     s = re.sub(r'[\s_\-]+', '-', s)
     return _COL_MAPPING.get(s, s)
 
+def _assert_unique_rut(people_df):
+    ruts_count = people_df['rut'].value_counts()
+    non_unique = ruts_count[ruts_count > 1]
+
+    assert len(non_unique) == 0, f'Repeated RUTs: {dict(non_unique)}'
+
 def read_people_df(filepath_or_buf):
-    try:
-        people_df = pd.read_excel(filepath_or_buf)
-    except ValueError:
-        return None
-    # TODO: verify columns
+    people_df = pd.read_excel(filepath_or_buf)
     people_df = people_df.rename(columns=_rename_col)
-    return people_df
+
+    _assert_unique_rut(people_df)
+
+    return people_df.reset_index(drop=True)

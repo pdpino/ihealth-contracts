@@ -21,18 +21,22 @@ class App:
         # mainframe.rowconfigure(0, weight=1)
 
         # Input: people_df
-        input_excel_frame = ttk.Labelframe(mainframe, text='Archivo personal')
+        input_excel_frame = ttk.Labelframe(mainframe, text="Archivo personal")
         input_excel_frame.grid(row=1, column=1)
 
-        ttk.Button(input_excel_frame, text="Selecciona archivo", command=self.load_file_dialog).grid(row=1, column=1, sticky=tk.W)
+        ttk.Button(
+            input_excel_frame,
+            text="Selecciona archivo",
+            command=self.load_file_dialog,
+        ).grid(row=1, column=1, sticky=tk.W)
         self.people_fname = ttk.Label(
             input_excel_frame,
-            text="No has seleccionado archivo",
+            text="No has seleccionado archivo", # REVIEW: delete this placeholder?
         )
         self.people_fname.grid(row=1, column=2, sticky=tk.W)
 
         # Input: people checkboxes
-        self.people_checkbox_frame = ttk.Labelframe(mainframe, text='Selecciona personas')
+        self.people_checkbox_frame = ttk.Labelframe(mainframe, text="Selecciona personas")
         self.people_checkbox_frame.grid(row=2, column=1)
         # ttk.Label(self.people_checkbox_frame, text="placeholder").grid(row=1, column=1, sticky=tk.W)
 
@@ -48,17 +52,15 @@ class App:
     def load_file_dialog(self):
         filepath = filedialog.askopenfilename(parent=self.window)
 
-        self.people_df = read_people_df(filepath)
-
-        if self.people_df is None:
+        try:
+            self.people_df = read_people_df(filepath)
+        except Exception as e:
             # TODO: show error
+            print('ERROR: ', e, e.message)
             return
 
-        self.people_df = self.people_df.reset_index(drop=True)
-
         # Update filename
-        if self.people_df is not None:
-            self.people_fname.configure(text=os.path.basename(filepath))
+        self.people_fname.configure(text=os.path.basename(filepath))
 
         # Clear previous selection
         for widget in self.people_checkbox_frame.winfo_children():
@@ -75,12 +77,11 @@ class App:
 
         self.selected = {}
         for index, row in self.people_df.iterrows():
-            name = row['name']
-            self.selected[name] = tk.BooleanVar()
+            self.selected[row.rut] = tk.BooleanVar()
             ttk.Checkbutton(
                 self.people_checkbox_frame,
-                text=name,
-                variable=self.selected[name],
+                text=row.rut,
+                variable=self.selected[row.rut],
                 command=self.update_all_checkbox,
             ).grid(row=index+2, column=1, sticky=tk.W)
 
@@ -101,9 +102,7 @@ class App:
         results = []
 
         for index, row in self.people_df.iterrows():
-            name = row['name']
-
-            if self.selected[name].get():
+            if self.selected[row.rut].get():
                 results.append(fill_document(row))
 
         print(results)
