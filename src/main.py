@@ -4,7 +4,7 @@ import tkinter as tk
 from tkinter import filedialog
 from tkinter import ttk
 
-from load_people import read_people_df
+from people import read_people_df
 from document import fill_document
 
 class App:
