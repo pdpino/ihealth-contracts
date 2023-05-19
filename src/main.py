@@ -1,4 +1,4 @@
-import re
+import operator
 import os
 import tkinter as tk
 import tkinter.font as tk_font
@@ -115,9 +115,11 @@ class App:
         self.people_list.configure(yscrollcommand=scroll_bar.set)
 
         self.people_list.grid(row=2, column=1, sticky=(tk.N, tk.W, tk.S, tk.E))
-        self.people_list.heading("#0", text="Nombre")
-        self.people_list.heading("rut", text="Rut")
-        self.people_list.heading("template", text="Cargo")
+        self.people_list.heading("#0", text="Nombre", command=lambda: self.sort_people_by('name'))
+        self.people_list.heading("rut", text="Rut", command=lambda: self.sort_people_by('rut'))
+        self.people_list.heading("template", text="Cargo", command=lambda: self.sort_people_by('template'))
+
+        self.last_sorted_by = (None, None)
 
         for index, row in self.people_df.iterrows():
             self.people_list.insert(
@@ -127,6 +129,28 @@ class App:
             )
 
         self.people_list.bind("<<TreeviewSelect>>", self.update_all_checkbox)
+
+    def sort_people_by(self, label):
+        index = {
+            'name': 1,
+            'rut': 2,
+            'template': 3,
+        }.get(label, 0)
+
+        rows = []
+        for item_key in self.people_list.get_children(''):
+            item = self.people_list.item(item_key)
+            rows.append((item_key, item['text'], *item['values']))
+
+        last_sort_label, last_sort_rev = self.last_sorted_by
+        reverse = not last_sort_rev if label == last_sort_label else False
+        rows = sorted(rows, key=operator.itemgetter(index), reverse=reverse)
+
+        for index, item_tuple in enumerate(rows):
+            item = item_tuple[0]
+            self.people_list.move(item, '', index)
+
+        self.last_sorted_by = (label, reverse)
 
     def press_select_all(self):
         n_selected = len(self.people_list.selection())
