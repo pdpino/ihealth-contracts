@@ -109,7 +109,12 @@ class App:
             selectmode="extended",
             columns=("rut", "template"),
         )
-        self.people_list.grid(row=2, column=1)
+
+        scroll_bar = ttk.Scrollbar(self.people_checkbox_frame, orient=tk.VERTICAL, command=self.people_list.yview)
+        scroll_bar.grid(row=2, column=1, sticky=(tk.N, tk.S, tk.E))
+        self.people_list.configure(yscrollcommand=scroll_bar.set)
+
+        self.people_list.grid(row=2, column=1, sticky=(tk.N, tk.W, tk.S, tk.E))
         self.people_list.heading("#0", text="Nombre")
         self.people_list.heading("rut", text="Rut")
         self.people_list.heading("template", text="Cargo")
