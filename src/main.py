@@ -52,6 +52,7 @@ class App:
         self.people_checkbox_frame = ttk.Labelframe(self.mainframe, text="Selecciona personas")
         self.people_checkbox_frame.grid(row=2, column=1)
 
+        # Status bar
         self.status_str = None
         self.status_label = None
 
@@ -103,28 +104,37 @@ class App:
             command=self.press_select_all,
         ).grid(row=1, column=1, sticky=tk.W)
 
-        self.selected = {}
+        self.people_list = ttk.Treeview(
+            self.people_checkbox_frame,
+            selectmode="extended",
+            columns=("rut", "template"),
+        )
+        self.people_list.grid(row=2, column=1)
+        self.people_list.heading("#0", text="Nombre")
+        self.people_list.heading("rut", text="Rut")
+        self.people_list.heading("template", text="Cargo")
+
         for index, row in self.people_df.iterrows():
-            self.selected[row.rut] = tk.BooleanVar()
-            ttk.Checkbutton(
-                self.people_checkbox_frame,
-                text=row['name'],
-                variable=self.selected[row.rut],
-                command=self.update_all_checkbox,
-            ).grid(row=index+2, column=1, sticky=tk.W)
+            self.people_list.insert(
+                '',
+                'end',
+                row.rut, text=row['name'], values=(row.rut, row.template),
+            )
+
+        self.people_list.bind("<<TreeviewSelect>>", self.update_all_checkbox)
 
     def press_select_all(self):
-        current_selection = sum(int(v.get()) for v in self.selected.values())
-        to_state = current_selection == 0
+        n_selected = len(self.people_list.selection())
 
-        self.selected_all.set(to_state)
-        for v in self.selected.values():
-            v.set(to_state)
+        if n_selected == len(self.people_df):
+            self.people_list.selection_set(tuple())
+            self.selected_all.set(False)
+        else:
+            self.people_list.selection_set(tuple(self.people_df['rut']))
+            self.selected_all.set(True)
 
-    def update_all_checkbox(self):
-        are_all_selected = all(v.get() for v in self.selected.values())
-
-        self.selected_all.set(are_all_selected)
+    def update_all_checkbox(self, unused_event):
+        self.selected_all.set(len(self.people_list.selection()) == len(self.people_df))
 
     def generate_files(self):
         if self.people_df is None:
@@ -135,8 +145,9 @@ class App:
 
         parent = 'generated'
 
+        selected = set(self.people_list.selection())
         for index, row in self.people_df.iterrows():
-            if self.selected[row.rut].get():
+            if row.rut in selected:
                 results.append(fill_document(row, parent))
 
         print(results)

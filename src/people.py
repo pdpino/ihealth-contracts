@@ -7,7 +7,6 @@ _COL_MAPPING = {
     'nombre': 'name',
     'rut': 'rut',
     'direccion': 'home_address',
-    'cargo': 'position',
     'fecha-generado': 'date_gen',
     'fecha-inicio': 'date_start',
     'fecha-termino': 'date_end',
