@@ -17,7 +17,7 @@
 
 ## Deploy
 
-* Generate spec file: `pyi-makespec --onefile --name convenios --hidden-import openpyxl --noconsole --add-data src/locales:locales src/main.py`
+* Generate spec file: `pyi-makespec --onefile --name convenios --hidden-import openpyxl --noconsole --add-data src/strings:strings src/main.py`
 * Generate executable: `python -m PyInstaller convenios.spec`
 * Run:
   * Linux: `./dist/convenios`

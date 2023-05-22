@@ -1,18 +1,18 @@
 import json
 import os
 
-_LOCALES_FOLDER = os.path.join(os.path.dirname(__file__), 'locales')
+_STRINGS_FOLDER = os.path.join(os.path.dirname(__file__), 'strings')
 
 class Strings:
     def __init__(self, locale='es'):
         self.strings_by_locale = {}
         self.current_locale = locale
 
-        for filename in os.listdir(_LOCALES_FOLDER):
+        for filename in os.listdir(_STRINGS_FOLDER):
             if filename.endswith('.json'):
                 name = os.path.splitext(filename)[0]
 
-            with open(os.path.join(_LOCALES_FOLDER, filename)) as f:
+            with open(os.path.join(_STRINGS_FOLDER, filename), encoding="utf-8") as f:
                 strings = json.load(f)
 
             self.strings_by_locale[name] = strings
