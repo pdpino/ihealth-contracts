@@ -2,15 +2,22 @@
 
 ## Installation
 
-`pip install tkinter python-docx pandas openpyxl Unidecode pyinstaller`
+`pip install python-docx pandas openpyxl Unidecode pyinstaller`
 
-* do not use conda, pyinstaller packaging may not work
+* do not install via conda, pyinstaller packaging may not work
 * Future: num2words
 
-## Packaging
+### Check tkinter is installed:
 
-`python -m PyInstaller convenios.spec`
+`python -m tkinter`
 
 ## Running
 
-* Linux: `./dist/convenios/convenios`
+`python src/main.py`
+
+## Deploy
+
+* Generate executable: `python -m PyInstaller convenios.spec`
+* Run:
+  * Linux: `./dist/convenios`
+  * Windows: execute `dist\convenios.exe`
