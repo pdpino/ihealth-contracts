@@ -5,7 +5,12 @@ from tkinter import ttk
 
 
 class InputFilepath:
-    def __init__(self, root, button_text="Selecciona archivo", callback=None, pathtype="file"):
+    def __init__(self,
+                 root,
+                 button_text="Selecciona archivo",
+                 callback=None,
+                 pathtype="file",
+                 initial_value=None):
         self.root = root
         self.callback = callback
         self.pathtype = pathtype
@@ -19,7 +24,7 @@ class InputFilepath:
         ).grid(row=1, column=1, sticky=tk.W)
         self.label = ttk.Label(
             self.frame,
-            text="vacío",
+            text="vacío" if initial_value is None else initial_value,
         )
         self.label.grid(row=1, column=2, sticky=tk.E)
 
@@ -32,10 +37,12 @@ class InputFilepath:
         else:
             filepath = filedialog.askopenfilename(parent=self.root)
 
+        filepath = os.path.abspath(filepath)
+
         if filepath and self.callback is not None:
             success = self.callback(filepath)
         else:
             success = False
 
         if success:
-            self.label.configure(text=os.path.basename(filepath))
+            self.label.configure(text=filepath)

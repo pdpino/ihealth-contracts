@@ -28,8 +28,12 @@ class App:
 
         # State
         self.people_df = None
-        self.template_folder = None
-        self.out_folder = None
+        self.template_folder = os.path.abspath('templates')
+        self.out_folder = os.path.abspath('generated')
+
+        # Status bar
+        self.status_str = None
+        self.status_label = None
 
         self.mainframe = ttk.Frame(self.window, padding="5")
         self.mainframe.grid(column=0, row=0, sticky=(tk.N, tk.W, tk.E, tk.S))
@@ -43,6 +47,7 @@ class App:
             button_text="Selecciona carpeta templates",
             callback=self.store_template_folder,
             pathtype="folder",
+            initial_value=self.template_folder,
         ).grid(row=1, column=1)
 
         InputFilepath(
@@ -50,6 +55,7 @@ class App:
             button_text="Selecciona carpeta salida",
             callback=self.store_out_folder,
             pathtype="folder",
+            initial_value=self.out_folder,
         ).grid(row=2, column=1)
 
         InputFilepath(
@@ -61,10 +67,6 @@ class App:
         # Input: people checkboxes
         self.people_checkbox_frame = ttk.Labelframe(self.mainframe, text="Selecciona personas")
         self.people_checkbox_frame.grid(row=2, column=1)
-
-        # Status bar
-        self.status_str = None
-        self.status_label = None
 
         # Submit button
         ttk.Button(self.mainframe, text="Generar convenios", command=self.generate_files).grid(row=3, column=1, sticky=tk.E)
@@ -88,6 +90,10 @@ class App:
         self.status_label.configure(style=f'{"Error" if error else "Success"}.TLabel')
 
     def load_people_file(self, filepath):
+        if not os.path.isfile(filepath):
+            self.show_message(f"Archivo no existe: {filepath}")
+            return False
+
         try:
             self.people_df = read_people_df(filepath)
             self.show_message(f"Se encontraron {len(self.people_df)} personas en archivo {os.path.basename(filepath)}")
@@ -143,6 +149,8 @@ class App:
         return True
 
     def store_template_folder(self, folderpath):
+        if not os.path.exists(folderpath):
+            return False
         self.template_folder = folderpath
         return True
 
