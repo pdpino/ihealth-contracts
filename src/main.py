@@ -2,11 +2,11 @@ import operator
 import os
 import tkinter as tk
 import tkinter.font as tk_font
-from tkinter import filedialog
 from tkinter import ttk
 
 from people import read_people_df
 from document import fill_document
+from buttons import InputFilepath
 
 # TODO: move strings out
 
@@ -26,27 +26,37 @@ class App:
         style.configure('Success.TLabel', foreground="#1c8246")
         style.configure('Error.TLabel', foreground="#df1010")
 
+        # State
         self.people_df = None
+        self.template_folder = None
+        self.out_folder = None
 
         self.mainframe = ttk.Frame(self.window, padding="5")
         self.mainframe.grid(column=0, row=0, sticky=(tk.N, tk.W, tk.E, tk.S))
         # self.mainframe.columnconfigure(0, weight=1)
         # self.mainframe.rowconfigure(0, weight=1)
 
-        # Input: people_df
-        input_excel_frame = ttk.Labelframe(self.mainframe, text="Archivo personas")
-        input_excel_frame.grid(row=1, column=1)
+        buttons_frame = ttk.Labelframe(self.mainframe, text="Configuración")
+        buttons_frame.grid(row=1, column=1)
+        InputFilepath(
+            buttons_frame,
+            button_text="Selecciona carpeta templates",
+            callback=self.store_template_folder,
+            pathtype="folder",
+        ).grid(row=1, column=1)
 
-        ttk.Button(
-            input_excel_frame,
-            text="Selecciona archivo",
-            command=self.load_file_dialog,
-        ).grid(row=1, column=1, sticky=tk.W)
-        self.people_fname = ttk.Label(
-            input_excel_frame,
-            text="No has seleccionado archivo",
-        )
-        self.people_fname.grid(row=1, column=2, sticky=tk.E)
+        InputFilepath(
+            buttons_frame,
+            button_text="Selecciona carpeta salida",
+            callback=self.store_out_folder,
+            pathtype="folder",
+        ).grid(row=2, column=1)
+
+        InputFilepath(
+            buttons_frame,
+            button_text="Selecciona archivo personas",
+            callback=self.load_people_file,
+        ).grid(row=3, column=1)
 
         # Input: people checkboxes
         self.people_checkbox_frame = ttk.Labelframe(self.mainframe, text="Selecciona personas")
@@ -57,7 +67,7 @@ class App:
         self.status_label = None
 
         # Submit button
-        ttk.Button(self.mainframe, text="Generar convenios", command=self.generate_files).grid(column=1, row=3, sticky=tk.E)
+        ttk.Button(self.mainframe, text="Generar convenios", command=self.generate_files).grid(row=3, column=1, sticky=tk.E)
 
         for child in self.mainframe.winfo_children():
             child.grid_configure(padx=5, pady=5)
@@ -77,20 +87,16 @@ class App:
         self.status_str.set(message)
         self.status_label.configure(style=f'{"Error" if error else "Success"}.TLabel')
 
-    def load_file_dialog(self):
-        filepath = filedialog.askopenfilename(parent=self.window)
-
+    def load_people_file(self, filepath):
         try:
             self.people_df = read_people_df(filepath)
             self.show_message(f"Se encontraron {len(self.people_df)} personas en archivo {os.path.basename(filepath)}")
         except Exception as e:
             print(e, type(e))
             self.show_message(str(e), error=True)
-            return
+            return False
 
-        # Update filename
-        self.people_fname.configure(text=os.path.basename(filepath))
-
+        ## Update list
         # Clear previous selection
         for widget in self.people_checkbox_frame.winfo_children():
             widget.destroy()
@@ -130,6 +136,16 @@ class App:
 
         self.people_list.bind("<<TreeviewSelect>>", self.update_all_checkbox)
 
+        return True
+
+    def store_out_folder(self, folderpath):
+        self.out_folder = folderpath
+        return True
+
+    def store_template_folder(self, folderpath):
+        self.template_folder = folderpath
+        return True
+
     def sort_people_by(self, label):
         index = {
             'name': 1,
@@ -166,24 +182,36 @@ class App:
         self.selected_all.set(len(self.people_list.selection()) == len(self.people_df))
 
     def generate_files(self):
+        if self.template_folder is None:
+            self.show_message("Selecciona una carpeta de templates", error=True)
+            return
+        if self.out_folder is None:
+            self.show_message("Selecciona una carpeta de salida", error=True)
+            return
         if self.people_df is None:
-            self.show_message("Selecciona un archivo primero", error=True)
+            self.show_message("Selecciona un archivo de personas", error=True)
             return
 
         results = []
 
-        parent = 'generated'
-
         selected = set(self.people_list.selection())
         for index, row in self.people_df.iterrows():
             if row.rut in selected:
-                results.append(fill_document(row, parent))
+                results.append(fill_document(
+                    row,
+                    out_folder=self.out_folder,
+                    template_folder=self.template_folder,
+                ))
 
         print(results)
         if len(results) == 0:
             self.show_message("Selecciona alguna persona", error=True)
+        elif all(r.ok for r in results):
+            self.show_message(f"{len(results)} convenios generados en carpeta {self.out_folder}")
         else:
-            self.show_message(f"{len(results)} convenios generados en carpeta {parent}")
+            failed = [r for r in results if not r.ok]
+            success = [r for r in results if r.ok]
+            self.show_message(f"exito: {len(success)}, error: {len(failed)}")
 
 
 

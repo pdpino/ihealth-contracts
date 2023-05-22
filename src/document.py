@@ -44,10 +44,10 @@ _FIELDS_PLACEHOLDERS = {
 }
 _PLACEHOLDER_REGEX = re.compile('|'.join(_FIELDS_PLACEHOLDERS.values()))
 
-def fill_document(fields, parent_folder='generated'):
+def fill_document(fields, out_folder='generated', template_folder='templates'):
     result = Result(fields)
 
-    template_fname = os.path.join('templates', f'{fields["template"]}.docx')
+    template_fname = os.path.join(template_folder, f'{fields["template"]}.docx')
 
     if not os.path.isfile(template_fname):
         return result.set_error(message=f'Template not found: {template_fname}')
@@ -71,7 +71,7 @@ def fill_document(fields, parent_folder='generated'):
 
             r.text = replaced
 
-    out_fname = os.path.join(parent_folder, f'{sanitize_name(fields["name"])}.docx')
+    out_fname = os.path.join(out_folder, f'{sanitize_name(fields["name"])}.docx')
     os.makedirs(os.path.dirname(out_fname), exist_ok=True)
     doc.save(out_fname)
 
