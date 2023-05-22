@@ -2,7 +2,7 @@ import re
 import os
 from collections import Counter
 from docx import Document
-from utils import sanitize_name
+from utils import sanitize_string, REQUIRED_COLUMNS
 
 class Result:
     def __init__(self, fields):
@@ -12,6 +12,8 @@ class Result:
         self.out_fname = ''
         self.fields = fields
         self.match_count = Counter()
+
+        self.name = (fields if fields is not None else {}).get('name', None)
 
     def set_error(self, message):
         self.ok = False
@@ -44,19 +46,24 @@ _FIELDS_PLACEHOLDERS = {
 }
 _PLACEHOLDER_REGEX = re.compile('|'.join(_FIELDS_PLACEHOLDERS.values()))
 
+assert set(_FIELDS_PLACEHOLDERS.keys()).issubset(REQUIRED_COLUMNS), "Internal error: field in _FIELDS_PLACEHOLDER is not marked as required"
+
 def fill_document(fields, out_folder='generated', template_folder='templates'):
     result = Result(fields)
+
+    if "template" not in fields:
+        return result.set_error(message=f'falta columna "template"')
 
     template_fname = os.path.join(template_folder, f'{fields["template"]}.docx')
 
     if not os.path.isfile(template_fname):
-        return result.set_error(message=f'Template not found: {template_fname}')
+        return result.set_error(message=f'Archivo template no existe: {template_fname}')
 
     doc = Document(template_fname)
 
     if any(key not in fields for key in _FIELDS_PLACEHOLDERS.keys()):
         missing_fields = ','.join(key for key in _FIELDS_PLACEHOLDERS.keys() if key not in fields)
-        return result.set_error(message=f'missing fields: {missing_fields}')
+        return result.set_error(message=f'Faltan columnas: {missing_fields}')
 
     for p in doc.paragraphs:
         for r in p.runs:
@@ -71,7 +78,7 @@ def fill_document(fields, out_folder='generated', template_folder='templates'):
 
             r.text = replaced
 
-    out_fname = os.path.join(out_folder, f'{sanitize_name(fields["name"])}.docx')
+    out_fname = os.path.join(out_folder, f'{sanitize_string(fields["name"])}.docx')
     os.makedirs(os.path.dirname(out_fname), exist_ok=True)
     doc.save(out_fname)
 

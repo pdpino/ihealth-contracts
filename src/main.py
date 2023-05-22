@@ -213,13 +213,15 @@ class App:
 
         print(results)
         if len(results) == 0:
-            self.show_message("Selecciona alguna persona", error=True)
+            self.show_message("Selecciona alguna persona de la lista", error=True)
         elif all(r.ok for r in results):
-            self.show_message(f"{len(results)} convenios generados en carpeta {self.out_folder}")
+            self.show_message(f"{len(results)} convenios generados correctamente")
         else:
-            failed = [r for r in results if not r.ok]
-            success = [r for r in results if r.ok]
-            self.show_message(f"exito: {len(success)}, error: {len(failed)}")
+            n_success = sum(int(r.ok) for r in results)
+            failures = [f"{r.name} - {r.message}" for r in results if not r.ok]
+            failures_listed = '\n'.join(failures)
+
+            self.show_message(f"{n_success} convenios generados, {len(failures)} errores:\n{failures_listed}", error=True)
 
 
 
