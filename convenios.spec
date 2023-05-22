@@ -8,7 +8,7 @@ a = Analysis(
     ['src/main.py'],
     pathex=[],
     binaries=[],
-    datas=[],
+    datas=[('src/locales', 'locales')],
     hiddenimports=['openpyxl'],
     hookspath=[],
     hooksconfig={},
