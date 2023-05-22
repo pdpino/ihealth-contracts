@@ -3,11 +3,12 @@ import tkinter as tk
 from tkinter import filedialog
 from tkinter import ttk
 
+from locales import STRINGS
 
 class InputFilepath:
     def __init__(self,
                  root,
-                 button_text="Selecciona archivo",
+                 button_text=STRINGS['select_file'],
                  callback=None,
                  pathtype="file",
                  initial_value=None):
@@ -15,7 +16,7 @@ class InputFilepath:
         self.callback = callback
         self.pathtype = pathtype
 
-        self.frame = ttk.Labelframe(root) # , text="Archivo/carpeta"
+        self.frame = ttk.Labelframe(root)
 
         ttk.Button(
             self.frame,
@@ -24,7 +25,7 @@ class InputFilepath:
         ).grid(row=1, column=1, sticky=tk.W)
         self.label = ttk.Label(
             self.frame,
-            text="vacío" if initial_value is None else initial_value,
+            text=STRINGS['empty'] if initial_value is None else initial_value,
         )
         self.label.grid(row=1, column=2, sticky=tk.E)
 
@@ -37,12 +38,12 @@ class InputFilepath:
         else:
             filepath = filedialog.askopenfilename(parent=self.root)
 
+        if not filepath:
+            return
+
         filepath = os.path.abspath(filepath)
 
-        if filepath and self.callback is not None:
-            success = self.callback(filepath)
-        else:
-            success = False
+        success = self.callback(filepath) if self.callback is not None else False
 
         if success:
             self.label.configure(text=filepath)

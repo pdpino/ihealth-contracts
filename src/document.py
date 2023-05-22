@@ -2,7 +2,9 @@ import re
 import os
 from collections import Counter
 from docx import Document
+
 from utils import sanitize_string, REQUIRED_COLUMNS
+from locales import STRINGS
 
 class Result:
     def __init__(self, fields):
@@ -52,18 +54,18 @@ def fill_document(fields, out_folder='generated', template_folder='templates'):
     result = Result(fields)
 
     if "template" not in fields:
-        return result.set_error(message=f'falta columna "template"')
+        return result.set_error(message=STRINGS.get('missing_col', 'template'))
 
     template_fname = os.path.join(template_folder, f'{fields["template"]}.docx')
 
     if not os.path.isfile(template_fname):
-        return result.set_error(message=f'Archivo template no existe: {template_fname}')
+        return result.set_error(message=STRINGS.get('template_file_not_found', template_fname))
 
     doc = Document(template_fname)
 
     if any(key not in fields for key in _FIELDS_PLACEHOLDERS.keys()):
         missing_fields = ','.join(key for key in _FIELDS_PLACEHOLDERS.keys() if key not in fields)
-        return result.set_error(message=f'Faltan columnas: {missing_fields}')
+        return result.set_error(message=STRINGS.get("missing_cols", missing_fields))
 
     for p in doc.paragraphs:
         for r in p.runs:

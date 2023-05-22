@@ -7,14 +7,13 @@ from tkinter import ttk
 from people import read_people_df
 from document import fill_document
 from buttons import InputFilepath
-
-# TODO: move strings out
+from locales import STRINGS
 
 class App:
     def __init__(self):
         # UI window
         self.window = tk.Tk()
-        self.window.title("Generar convenios")
+        self.window.title(STRINGS['generate_contracts'])
 
         style = ttk.Style()
         body_font = tk_font.Font(size=18)
@@ -40,11 +39,11 @@ class App:
         # self.mainframe.columnconfigure(0, weight=1)
         # self.mainframe.rowconfigure(0, weight=1)
 
-        buttons_frame = ttk.Labelframe(self.mainframe, text="Configuración")
+        buttons_frame = ttk.Labelframe(self.mainframe, text=STRINGS['settings'])
         buttons_frame.grid(row=1, column=1)
         InputFilepath(
             buttons_frame,
-            button_text="Selecciona carpeta templates",
+            button_text=STRINGS['select_template_folder'],
             callback=self.store_template_folder,
             pathtype="folder",
             initial_value=self.template_folder,
@@ -52,7 +51,7 @@ class App:
 
         InputFilepath(
             buttons_frame,
-            button_text="Selecciona carpeta salida",
+            button_text=STRINGS['select_out_folder'],
             callback=self.store_out_folder,
             pathtype="folder",
             initial_value=self.out_folder,
@@ -60,16 +59,16 @@ class App:
 
         InputFilepath(
             buttons_frame,
-            button_text="Selecciona archivo personas",
+            button_text=STRINGS['select_people_file'],
             callback=self.load_people_file,
         ).grid(row=3, column=1)
 
         # Input: people checkboxes
-        self.people_checkbox_frame = ttk.Labelframe(self.mainframe, text="Selecciona personas")
+        self.people_checkbox_frame = ttk.Labelframe(self.mainframe, text=STRINGS['choose_people'])
         self.people_checkbox_frame.grid(row=2, column=1)
 
         # Submit button
-        ttk.Button(self.mainframe, text="Generar convenios", command=self.generate_files).grid(row=3, column=1, sticky=tk.E)
+        ttk.Button(self.mainframe, text=STRINGS['generate_contracts'], command=self.generate_files).grid(row=3, column=1, sticky=tk.E)
 
         for child in self.mainframe.winfo_children():
             child.grid_configure(padx=5, pady=5)
@@ -91,12 +90,12 @@ class App:
 
     def load_people_file(self, filepath):
         if not os.path.isfile(filepath):
-            self.show_message(f"Archivo no existe: {filepath}")
+            self.show_message(STRINGS.get('file_not_found', filepath))
             return False
 
         try:
             self.people_df = read_people_df(filepath)
-            self.show_message(f"Se encontraron {len(self.people_df)} personas en archivo {os.path.basename(filepath)}")
+            self.show_message(STRINGS.get('found_n_people_in_file', len(self.people_df), os.path.basename(filepath)))
         except Exception as e:
             print(e, type(e))
             self.show_message(str(e), error=True)
@@ -111,7 +110,7 @@ class App:
         self.selected_all = tk.BooleanVar()
         ttk.Checkbutton(
             self.people_checkbox_frame,
-            text="Todos",
+            text=STRINGS['all'],
             variable=self.selected_all,
             command=self.press_select_all,
         ).grid(row=1, column=1, sticky=tk.W)
@@ -127,9 +126,9 @@ class App:
         self.people_list.configure(yscrollcommand=scroll_bar.set)
 
         self.people_list.grid(row=2, column=1, sticky=(tk.N, tk.W, tk.S, tk.E))
-        self.people_list.heading("#0", text="Nombre", command=lambda: self.sort_people_by('name'))
-        self.people_list.heading("rut", text="Rut", command=lambda: self.sort_people_by('rut'))
-        self.people_list.heading("template", text="Cargo", command=lambda: self.sort_people_by('template'))
+        self.people_list.heading("#0", text=STRINGS['name'], command=lambda: self.sort_people_by('name'))
+        self.people_list.heading("rut", text=STRINGS['rut'], command=lambda: self.sort_people_by('rut'))
+        self.people_list.heading("template", text=STRINGS['position'], command=lambda: self.sort_people_by('template'))
 
         self.last_sorted_by = (None, None)
 
@@ -191,13 +190,13 @@ class App:
 
     def generate_files(self):
         if self.template_folder is None:
-            self.show_message("Selecciona una carpeta de templates", error=True)
+            self.show_message(STRINGS['select_template_folder'], error=True)
             return
         if self.out_folder is None:
-            self.show_message("Selecciona una carpeta de salida", error=True)
+            self.show_message(STRINGS['select_out_folder'], error=True)
             return
         if self.people_df is None:
-            self.show_message("Selecciona un archivo de personas", error=True)
+            self.show_message(STRINGS['select_people_file'], error=True)
             return
 
         results = []
@@ -213,15 +212,14 @@ class App:
 
         print(results)
         if len(results) == 0:
-            self.show_message("Selecciona alguna persona de la lista", error=True)
+            self.show_message(STRINGS['select_person_from_list'], error=True)
         elif all(r.ok for r in results):
-            self.show_message(f"{len(results)} convenios generados correctamente")
+            self.show_message(STRINGS.get('n_contracts_generated', len(results)))
         else:
-            n_success = sum(int(r.ok) for r in results)
             failures = [f"{r.name} - {r.message}" for r in results if not r.ok]
             failures_listed = '\n'.join(failures)
 
-            self.show_message(f"{n_success} convenios generados, {len(failures)} errores:\n{failures_listed}", error=True)
+            self.show_message(STRINGS.get('n_errors_and_details', len(failures), failures_listed), error=True)
 
 
 
