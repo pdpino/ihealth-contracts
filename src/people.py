@@ -20,6 +20,7 @@ _COL_MAPPING = {
     'titulo': 'title',
     'proyecto': 'project',
 }
+_INVERSE_COL_MAPPING = { v: k for k, v in _COL_MAPPING.items() }
 
 assert set(REQUIRED_COLUMNS).issubset(_COL_MAPPING.values()), "Internal error: _COL_MAPPING is not full"
 
@@ -36,7 +37,7 @@ def _assert_required_columns(people_df_with_raw_cols):
             if _rename_col(raw_column) == col
         ]
         if len(appearances) == 0:
-            raise ValueError(STRINGS.get('missing_col', col))
+            raise ValueError(STRINGS.get('missing_col', _INVERSE_COL_MAPPING[col]))
         if len(appearances) > 1:
             raise ValueError(STRINGS.get('duplicated_col', appearances))
 
