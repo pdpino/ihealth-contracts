@@ -10,6 +10,7 @@ _COL_MAPPING = {
     'rut': 'rut',
     'direccion': 'home_address',
     'domicilio': 'home_address',
+    'fecha-emision': 'date_gen',
     'fecha-generado': 'date_gen',
     'fecha-inicio': 'date_start',
     'fecha-termino': 'date_end',
