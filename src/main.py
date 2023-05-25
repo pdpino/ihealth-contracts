@@ -8,6 +8,27 @@ from people import read_people_df
 from document import fill_document
 from buttons import InputFilepath
 from locales import STRINGS
+from utils import sanitize_string
+
+def find_first_occurence(folders, target, default_value):
+    target = target.lower().strip()
+
+    for folder in folders:
+        if target in sanitize_string(folder.lower().strip()):
+            return folder
+    return default_value
+
+
+def load_default_folders():
+    available_folders = [f for f in os.listdir('.') if os.path.isdir(f)]
+
+    template_folder = find_first_occurence(available_folders, 'plantilla', 'plantillas')
+    out_folder = find_first_occurence(available_folders, 'autogenerado', 'autogenerados')
+
+    template_folder = os.path.abspath(template_folder)
+    out_folder = os.path.abspath(out_folder)
+
+    return template_folder, out_folder
 
 class App:
     def __init__(self):
@@ -27,8 +48,7 @@ class App:
 
         # State
         self.people_df = None
-        self.template_folder = os.path.abspath('templates')
-        self.out_folder = os.path.abspath('generated')
+        self.template_folder, self.out_folder = load_default_folders()
 
         # Status bar
         self.status_str = None

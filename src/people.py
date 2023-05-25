@@ -17,6 +17,8 @@ _COL_MAPPING = {
     'monto-palabras': 'amount_words',
     'template': 'template',
     'plantilla': 'template',
+    'titulo': 'title',
+    'proyecto': 'project',
 }
 
 assert set(REQUIRED_COLUMNS).issubset(_COL_MAPPING.values()), "Internal error: _COL_MAPPING is not full"

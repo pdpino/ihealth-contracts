@@ -4,7 +4,9 @@ from unidecode import unidecode
 _SEPARATOR_PATTERN = re.compile(r"[\s_\-]+")
 
 def sanitize_string(s):
-    s = s.lower()
+    if not s:
+        return ''
+    s = s.lower().strip()
     s = re.sub(_SEPARATOR_PATTERN, "-", s)
     return unidecode(s)
 
@@ -18,4 +20,6 @@ REQUIRED_COLUMNS = [
     'amount_num',
     'amount_words',
     'template',
+    'title',
+    'project',
 ]

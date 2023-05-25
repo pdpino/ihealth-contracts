@@ -45,6 +45,8 @@ _FIELDS_PLACEHOLDERS = {
     'date_end': 'FECHATERMINO',
     'amount_num': 'MONTONUMERO',
     'amount_words': 'MONTOPALABRAS',
+    'title': 'TITULO',
+    'project': 'PROYECTO',
 }
 _PLACEHOLDER_REGEX = re.compile('|'.join(_FIELDS_PLACEHOLDERS.values()))
 
